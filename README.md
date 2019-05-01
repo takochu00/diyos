@@ -14,10 +14,17 @@ The host PC's emvironment is largely based on http://d.hatena.ne.jp/satfy/201012
 For the connection between Host and Target, BSURSRC06(RS232C cable) is used.
 It requires driver acquired from https://www.ftdichip.com/Drivers/VCP.htm .
 
+As for host application, "cu" is used.
+You need to install lrzsz from package manager to use lsx command through xmodem protocol.
+
 (JP) これは１２ステップで作る組み込みOS自作入門を参考に実装しています
 ホストPCの環境は http://d.hatena.ne.jp/satfy/20101226 を参考にしています.
 ホストとターゲットの接続にはBSURSRC06(RS232C cable)を使用しています.
 https://www.ftdichip.com/Drivers/VCP.htm から取得できるドライバーが必要になります.
+
+ホストアプリケーションに"cu"を使っています.
+XMODEMプロトコル経由のファイル転送にlsxコマンドを使うため、lrzszをパッケージ管理ソフトでインストールする必要があります.
+
 
 
 
