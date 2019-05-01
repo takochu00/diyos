@@ -20,7 +20,8 @@ H8WRITE = ../tools/kz_h8write
 H8WRITE_SERDEV = /dev/cu.usbserial-FTRTH6KQ
 
 OBJS  = vector.o startup.o main.o
-OBJS += lib.o serial.o xmodem.o elf.o
+OBJS += xmodem.o elf.o
+COMMONLIB = ../common/common.a
 TARGET = bootloader
 
 CFLAGS = -Wall -mh -nostdinc -nostdlib -fno-builtin
@@ -39,7 +40,7 @@ LFLAGS = -static -T ld.scr -L.
 all :		$(TARGET)
 
 $(TARGET) :	$(OBJS)
-		$(CC) $(OBJS) -o $(TARGET) $(CFLAGS) $(LFLAGS)
+		$(CC) $(OBJS) $(COMMONLIB) -o $(TARGET) $(CFLAGS) $(LFLAGS)
 		cp $(TARGET) $(TARGET).elf
 		$(STRIP) $(TARGET)
 
