@@ -45,5 +45,27 @@ int serial_send_byte(int index, uint8_t data)
     return 0;
 }
 
+int serial_is_recv_enable(int index){
+    volatile struct h8_3069f_sci *sci = regs[index].sci;
+    volatile union H8_3069F_SCI_SSR ssr;
+    ssr.u8all = sci->ssr;
+    return ssr.bits.RDRF;
+}
+
+uint8_t serial_recv_byte(int index){
+    volatile struct h8_3069f_sci *sci = regs[index].sci;
+    uint8_t c;
+    //wait by the receive character
+    while(!serial_is_recv_enable(index));
+    //data receive
+    c = sci->rdr;
+    //status to receive complete
+    volatile union H8_3069F_SCI_SSR ssr;
+    ssr.u8all = sci->ssr;
+    ssr.bits.RDRF = 0;
+    sci->ssr = ssr.u8all;
+    return c;
+}
+
 
 

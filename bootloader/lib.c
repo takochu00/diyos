@@ -32,6 +32,26 @@ int putxval(uint32_t value, int column){
     return printf(p+1);
 }
 
+uint8_t getchar(void){
+    uint8_t c = serial_recv_byte(SERIAL_DEFAULT_DEVICE);
+    c = (c == '\r') ? '\n' : c; //return code translation.
+    putchar(c); //echo back
+    return c;
+}
+
+int getline(uint8_t *buf){
+    int i = 0;
+    uint8_t c;
+    do {
+        c = getchar();
+        if(c == '\n') c = '\0';
+        buf[i++] = c;
+    } while(c);
+    return i - 1;
+}
+
+
+
 void *memset(void *dst, int c, long size){
     uint8_t *p;
     for(p = (uint8_t *)dst; size > 0; --size){
@@ -74,7 +94,7 @@ char *strcpy(char *dst, const char *src){
 }
 
 int strcmp(const char *s1, const char *s2){
-    for(;; ++s1, ++s2){
+    for(; *s1 || *s2; ++s1, ++s2){
         if(*s1 > *s2) return 1;
         else if(*s1 < *s2) return -1;//compiler warns -1 is 64bit on my environemnt
     }
@@ -88,3 +108,5 @@ int strncmp(const char *s1, const char*s2, int len){
     }
     return 0;
 }
+
+
