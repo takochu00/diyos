@@ -2,6 +2,7 @@
 #include <lib.h>
 #include <serial.h>
 #include <xmodem.h>
+#include <elf.h>
 
 static int init(void){
     //refer symbols defined at ld.scr
@@ -70,6 +71,9 @@ int main(void){
             putxval(size, 0);
             putchar('\n');
             dump(loadbuf, size);
+        }
+        else if(strcmp(buf, "run") == 0){
+            elf_load(loadbuf);
         }
         else {
             printf("unknown cmd\n");
