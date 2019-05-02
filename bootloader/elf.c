@@ -66,26 +66,21 @@ static int elf_load_program(ELF_HEADER *header){
         //type == 1 means loadable
         if(phdr->type != 1) continue;
         //check loadable file. So far, value check only.
-        putxval(phdr->offset, 6); putchar(' ');
-        putxval(phdr->virtual_addr, 8); putchar(' ');
-        putxval(phdr->physical_addr, 8); putchar(' ');
-        putxval(phdr->file_size, 5); putchar(' ');
-        putxval(phdr->memory_size, 5); putchar(' ');
-        putxval(phdr->flags, 2); putchar(' ');
-        putxval(phdr->align, 2); putchar('\n');
+        memcpy((uint8_t *)phdr->physical_addr, (uint8_t *)header + phdr->offset, phdr->file_size);
+        memset((uint8_t *)phdr->physical_addr + phdr->file_size, 0, phdr->memory_size - phdr->file_size);
     }
     return 0;
 }
 
-int elf_load(uint8_t *buf){
+uint8_t *elf_load(uint8_t *buf){
     ELF_HEADER *header = (ELF_HEADER *)buf;
     if(elf_check(header) < 0){
         printf("ELF HEADER Check failed\n");
-        return -1;
+        return NULL;
     }
     if(elf_load_program(header) < 0){
         printf("ELF LOAD PROGRAM failed\n");
-        return -1;
+        return NULL;
     }
-    return 0;
+    return (uint8_t *)header->entry_point;
 }

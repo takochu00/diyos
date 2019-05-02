@@ -73,7 +73,18 @@ int main(void){
             dump(loadbuf, size);
         }
         else if(strcmp(buf, "run") == 0){
-            elf_load(loadbuf);
+            uint8_t *entry_point = elf_load(loadbuf);
+            if(entry_point == NULL){
+                printf("run error!\n");
+            }
+            else {
+                printf("starting from entry_point: ");
+                void (*f)(void);
+                putxval((uint32_t)entry_point, 0);
+                putchar('\n');
+                f = (void (*) (void))entry_point;
+                f();
+            }
         }
         else {
             printf("unknown cmd\n");
