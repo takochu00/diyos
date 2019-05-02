@@ -19,7 +19,7 @@ H8WRITE = ../tools/kz_h8write
 #Mac OS
 H8WRITE_SERDEV = /dev/cu.usbserial-FTRTH6KQ
 
-OBJS  = vector.o startup.o main.o
+OBJS  = vector.o startup.o main.o intr.o
 OBJS += xmodem.o elf.o
 COMMONLIB = ../common/common.a
 TARGET = bootloader
@@ -36,10 +36,11 @@ LFLAGS = -static -T ld.scr -L.
 
 .SUFFIXES: .c .o
 .SUFFIXES: .s .o
+.SUFFIXES: .S .o
 
 all :		$(TARGET)
 
-$(TARGET) :	$(OBJS)
+$(TARGET) :	$(OBJS) $(COMMONLIB)
 		$(CC) $(OBJS) $(COMMONLIB) -o $(TARGET) $(CFLAGS) $(LFLAGS)
 		cp $(TARGET) $(TARGET).elf
 		$(STRIP) $(TARGET)
@@ -48,6 +49,9 @@ $(TARGET) :	$(OBJS)
 		$(CC) -c $(CFLAGS) $<
 
 .s.o :		$<
+		$(CC) -c $(CFLAGS) $<
+
+.S.o :		$<
 		$(CC) -c $(CFLAGS) $<
 
 $(TARGET).mot :	$(TARGET)

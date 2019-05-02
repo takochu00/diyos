@@ -14,7 +14,7 @@ RANLIB  = $(BINDIR)/$(ADDNAME)ranlib
 STRIP   = $(BINDIR)/$(ADDNAME)strip
 
 
-OBJS = lib.o serial.o
+OBJS = lib.o serial.o interrupt.o
 TARGET = common
 
 CFLAGS = -Wall -mh -nostdinc -nostdlib -fno-builtin
@@ -33,6 +33,12 @@ all :		$(TARGET)
 
 $(TARGET) :	$(OBJS)
 		$(AR) rcs $(TARGET).a $(OBJS)
+
+.c.o :		$<
+		$(CC) -c $(CFLAGS) $<
+
+.s.o :		$<
+		$(CC) -c $(CFLAGS) $<
 
 clean :
 		rm -f $(OBJS) $(TARGET).a

@@ -67,5 +67,51 @@ uint8_t serial_recv_byte(int index){
     return c;
 }
 
+int serial_intr_is_send_enable(int index){
+    volatile struct h8_3069f_sci *sci = regs[index].sci;
+    volatile union H8_3069F_SCI_SCR scr;
+    scr.u8all = sci->scr;
+    return scr.bits.TIE;
+}
+
+void serial_intr_send_enable(int index){
+    volatile struct h8_3069f_sci *sci = regs[index].sci;
+    volatile union H8_3069F_SCI_SCR scr;
+    scr.u8all = sci->scr;
+    scr.bits.TIE = 1;
+    sci->scr = scr.u8all;
+}
+
+void serial_intr_send_disable(int index){
+    volatile struct h8_3069f_sci *sci = regs[index].sci;
+    volatile union H8_3069F_SCI_SCR scr;
+    scr.u8all = sci->scr;
+    scr.bits.TIE = 0;
+    sci->scr = scr.u8all;
+}
+
+int serial_intr_is_recv_enable(int index){
+    volatile struct h8_3069f_sci *sci = regs[index].sci;
+    volatile union H8_3069F_SCI_SCR scr;
+    scr.u8all = sci->scr;
+    return scr.bits.RIE;
+}
+
+void serial_intr_recv_enable(int index){
+    volatile struct h8_3069f_sci *sci = regs[index].sci;
+    volatile union H8_3069F_SCI_SCR scr;
+    scr.u8all = sci->scr;
+    scr.bits.RIE = 1;
+    sci->scr = scr.u8all;
+}
+
+void serial_intr_recv_disable(int index){
+    volatile struct h8_3069f_sci *sci = regs[index].sci;
+    volatile union H8_3069F_SCI_SCR scr;
+    scr.u8all = sci->scr;
+    scr.bits.RIE = 0;
+    sci->scr = scr.u8all;
+}
+
 
 

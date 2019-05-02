@@ -3,6 +3,7 @@
 #include <serial.h>
 #include <xmodem.h>
 #include <elf.h>
+#include <interrupt.h>
 
 static int init(void){
     //refer symbols defined at ld.scr
@@ -10,6 +11,8 @@ static int init(void){
 
     //initialize data area
     memcpy(&data_start, &erodata, (long)&edata - (long)&data_start);
+    //initialize softvec for interrupt
+    softvec_init();
     //initialize bss area
     memset(&bss_start, 0, (long)&ebss - (long)&bss_start);
     serial_init(SERIAL_DEFAULT_DEVICE);
@@ -50,6 +53,7 @@ int main(void){
     static uint8_t *loadbuf = NULL;
     extern int buffer_start; //defined at linker script
     //initialize data/bss area and serial device
+    INTR_DISABLE;//Disable interrupt at first
     init();
 
     printf("bootloader start\n");
