@@ -11,4 +11,8 @@ typedef char             int8_t;
 typedef short           int16_t;
 typedef long            int32_t;
 
+typedef uint32_t diy_thread_id_t;
+typedef int (*diy_func_t)(int argc, char *argv[]);
+typedef void (*diy_handler_t)(void);
+
 #endif//_TYPEDEFS_H_

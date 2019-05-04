@@ -13,11 +13,9 @@ OBJDUMP = $(BINDIR)/$(ADDNAME)objdump
 RANLIB  = $(BINDIR)/$(ADDNAME)ranlib
 STRIP   = $(BINDIR)/$(ADDNAME)strip
 
-#set your designated path to H8write
-
-#Mac OS
-
 OBJS  = startup.o main.o
+#OS files
+OBJS += diyos.o syscall.o test.o
 COMMONLIB = ../common/common.a
 TARGET = diyos
 
