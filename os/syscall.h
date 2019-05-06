@@ -10,6 +10,8 @@ typedef enum {
     DIY_SYSCALL_TYPE_WAKEUP,
     DIY_SYSCALL_TYPE_GETID,
     DIY_SYSCALL_TYPE_CHANGE_PRIORITY,
+    DIY_SYSCALL_TYPE_KMALLOC,
+    DIY_SYSCALL_TYPE_KMFREE,
 } diy_syscall_type_t;
 
 typedef struct {
@@ -43,6 +45,14 @@ typedef struct {
             int priority;
             int ret;
         } change_priority;
+        struct {
+            int size;
+            void *ret;
+        } kmalloc;
+        struct {
+            void *p;
+            int ret;
+        } kmfree;
     } un;
 } diy_syscall_param_t;
 

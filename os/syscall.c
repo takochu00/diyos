@@ -49,3 +49,17 @@ int diy_thread_change_priority(int priority){
     diy_syscall(DIY_SYSCALL_TYPE_CHANGE_PRIORITY, &param);
     return param.un.change_priority.ret;
 }
+
+void *diy_thread_kmalloc(int size){
+    diy_syscall_param_t param;
+    param.un.kmalloc.size = size;
+    diy_syscall(DIY_SYSCALL_TYPE_KMALLOC, &param);
+    return param.un.kmalloc.ret;
+}
+
+int diy_thread_kmfree(void *p){
+    diy_syscall_param_t param;
+    param.un.kmfree.p = p;
+    diy_syscall(DIY_SYSCALL_TYPE_KMFREE, &param);
+    return param.un.kmfree.ret;
+}

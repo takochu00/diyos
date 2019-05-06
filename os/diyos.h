@@ -11,6 +11,8 @@ int diy_thread_sleep(void);
 int diy_thread_wakeup(diy_thread_id_t id);
 diy_thread_id_t diy_thread_getid(void);
 int diy_thread_change_priority(int priority);
+void *diy_thread_kmalloc(int size);
+int diy_thread_kmfree(void *p);
 
 //for library
 void diy_start(diy_func_t func, char *name, int priority, int stacksize, int argc, char *argv[]);

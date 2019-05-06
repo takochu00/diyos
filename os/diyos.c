@@ -4,6 +4,7 @@
 #include <interrupt.h>
 #include <syscall.h>
 #include <lib.h>
+#include <memory.h>
 
 #define THREAD_NUM 6
 #define PRIORITY_NUM 16
@@ -189,6 +190,17 @@ static int thread_change_priority(int priority){
     return prev_priority;
 }
 
+static void *thread_kmalloc(int size){
+    put_current_thread();
+    return diy_mem_alloc(size);
+}
+
+static int thread_kmfree(void *p){
+    diy_mem_free(p);
+    put_current_thread();
+    return 0;
+}
+
 static int setintr(softvec_type_t type, diy_handler_t handler){
     static void thread_intr(softvec_type_t type, uint32_t sp);
     //register interrupt handler to enter OS process
@@ -222,6 +234,12 @@ static void call_functions(diy_syscall_type_t type, diy_syscall_param_t *param){
             break;
         case DIY_SYSCALL_TYPE_CHANGE_PRIORITY:
             param->un.change_priority.ret = thread_change_priority(param->un.change_priority.priority);
+            break;
+        case DIY_SYSCALL_TYPE_KMALLOC:
+            param->un.kmalloc.ret = thread_kmalloc(param->un.kmalloc.size);
+            break;
+        case DIY_SYSCALL_TYPE_KMFREE:
+            param->un.kmfree.ret = thread_kmfree(param->un.kmfree.p);
             break;
         default:
             break;
@@ -271,6 +289,7 @@ static void thread_intr(softvec_type_t type, uint32_t sp){
 }
 
 void diy_start(diy_func_t func, char *name, int priority, int stacksize, int argc, char *argv[]){
+    diy_mem_init();//initialize memory for alloc/free operation
     current_thread = NULL;
     memset(readyque, 0, sizeof(readyque));
     memset(threads, 0, sizeof(threads));

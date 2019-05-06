@@ -2,7 +2,7 @@
 #include <typedefs.h>
 #include <diyos.h>
 #include <lib.h>
-
+/*
 int test08_1(int argc, char *argv[]){
     char buf[32];
     printf("test08_1 started.\n");
@@ -82,5 +82,33 @@ int test09_3(int argc, char *argv[]){
     printf("test09_3 exit in\n");
     diy_thread_exit();
     printf("test09_3 exit out\n");
+    return 0;
+}
+*/
+int test10_1(int argc, char *argv[]){
+    char *p1;
+    char *p2;
+    printf("test10_1 start\n");
+    int i, j;
+    for(i = 4; i <= 56; i+=4){
+        p1 = diy_thread_kmalloc(i);
+        p2 = diy_thread_kmalloc(i);
+        for(j = 0; j < i - 1; ++ j){
+            p1[j] = 'a';
+            p2[j] = 'b';
+        }
+        p1[j] = '\0';
+        p2[j] = '\0';
+        putxval((uint32_t)p1, 8);
+        putchar(' ');
+        printf(p1);
+        putchar('\n');
+        putxval((uint32_t)p2, 8);
+        putchar(' ');
+        printf(p2);
+        putchar('\n');
+        diy_thread_kmfree(p1);
+        diy_thread_kmfree(p2);
+    }
     return 0;
 }

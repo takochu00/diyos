@@ -15,7 +15,7 @@ STRIP   = $(BINDIR)/$(ADDNAME)strip
 
 OBJS  = startup.o main.o
 #OS files
-OBJS += diyos.o syscall.o test.o
+OBJS += diyos.o syscall.o memory.o test.o 
 COMMONLIB = ../common/common.a
 TARGET = diyos
 
