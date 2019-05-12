@@ -37,6 +37,27 @@ typedef struct diy_thread {
     diy_thread_ctx context;
 } diy_thread;
 
+//message buffer and msgbox
+typedef struct diy_msgbuf {
+    struct diy_msgbuf *next;
+    diy_thread *sender;
+    struct {
+        int size;
+        char *p;
+    } param;
+} diy_msgbuf;
+
+//msgbox
+
+typedef struct diy_msgbox {
+    diy_thread *receiver;
+    diy_msgbuf *head;
+    diy_msgbuf *tail;
+    //Since H8 is 16bit CPU, 32bit MUL instruction is not available.
+    //To avoid link errors like "__mulsi3 is not exist", arrange struct size is power of 2.
+    long dummy[1];
+} diy_msgbox;
+
 //ready queue for thread management
 static struct {
     diy_thread *head;
@@ -46,6 +67,7 @@ static struct {
 static diy_thread *current_thread;
 static diy_thread threads[THREAD_NUM];
 static diy_handler_t handlers[SOFTVEC_TYPE_NUM];
+static diy_msgbox msgboxes[MSGBOX_ID_NUM];
 void dispatch(diy_thread_ctx *context);
 
 static int get_current_thread(void){
@@ -201,6 +223,76 @@ static int thread_kmfree(void *p){
     return 0;
 }
 
+static void msgsend(diy_msgbox *pmsgbox, diy_thread *thp, int size, char *p){
+    diy_msgbuf *pmsg;
+    pmsg = (diy_msgbuf *)diy_mem_alloc(sizeof(*pmsg));
+    if(pmsg == NULL) diy_sysdown();
+    pmsg->next = NULL;
+    pmsg->sender = thp;
+    pmsg->param.size = size;
+    pmsg->param.p = p;
+    if(pmsgbox->tail != NULL){
+        pmsgbox->tail->next = pmsg;
+    }
+    else {
+        pmsgbox->head = pmsg;
+    }
+    pmsgbox->tail = pmsg;
+}
+
+static void msgrecv(diy_msgbox *pmsgbox){
+    diy_msgbuf *pmsg;
+    diy_syscall_param_t *param;
+    pmsg = pmsgbox->head;
+    pmsgbox->head = pmsg->next;
+    if(pmsgbox->head == NULL){
+        pmsgbox->tail = NULL;
+    }
+    pmsg->next = NULL;
+
+    param = pmsgbox->receiver->syscall.param;
+    param->un.msgrecv.ret = (diy_thread_id_t *)pmsg->sender;
+    if(param->un.msgrecv.psize != NULL){
+        *(param->un.msgrecv.psize) = pmsg->param.size;
+    }
+    if(param->un.msgrecv.pp != NULL){
+        *(param->un.msgrecv.pp) = pmsg->param.p;
+    }
+    pmsgbox->receiver = NULL;
+    diy_mem_free(pmsg);
+}
+
+static int thread_msgsend(diy_msgbox_id_t id, int size, char *p){
+    diy_msgbox *pmsgbox = &msgboxes[id];
+
+    put_current_thread();//message send operation
+    msgsend(pmsgbox, current_thread, size, p);
+
+    //if waiting thread exists, do receive operation.
+    if(pmsgbox->receiver != NULL){
+        current_thread = pmsgbox->receiver;
+        msgrecv(pmsgbox);
+        put_current_thread();
+    }
+
+    return size;
+}
+
+static diy_thread_id_t thread_msgrecv(diy_msgbox_id_t id, int *psize, char **pp){
+    diy_msgbox *pmsgbox = &msgboxes[id];
+    if(pmsgbox->receiver != NULL) diy_sysdown();
+
+    pmsgbox->receiver = current_thread;
+    if(pmsgbox->head == NULL){
+        //no message. sleep thread
+        return -1;
+    }
+
+    msgrecv(pmsgbox);
+    put_current_thread();//received. thread is ready.
+    return current_thread->syscall.param->un.msgrecv.ret;
+}
+
 static int setintr(softvec_type_t type, diy_handler_t handler){
     static void thread_intr(softvec_type_t type, uint32_t sp);
     //register interrupt handler to enter OS process
@@ -240,6 +332,12 @@ static void call_functions(diy_syscall_type_t type, diy_syscall_param_t *param){
             break;
         case DIY_SYSCALL_TYPE_KMFREE:
             param->un.kmfree.ret = thread_kmfree(param->un.kmfree.p);
+            break;
+        case DIY_SYSCALL_TYPE_MSGSEND:
+            param->un.msgsend.ret = thread_msgsend(param->un.msgsend.id, param->un.msgsend.size, param->un.msgsend.p);
+            break;
+        case DIY_SYSCALL_TYPE_MSGRECV:
+            param->un.msgrecv.ret = thread_msgrecv(param->un.msgrecv.id, param->un.msgrecv.psize, param->un.msgrecv.pp);
             break;
         default:
             break;
@@ -294,6 +392,7 @@ void diy_start(diy_func_t func, char *name, int priority, int stacksize, int arg
     memset(readyque, 0, sizeof(readyque));
     memset(threads, 0, sizeof(threads));
     memset(handlers, 0, sizeof(handlers));
+    memset(msgboxes, 0, sizeof(msgboxes));
 
     setintr(SOFTVEC_TYPE_SYSCALL, syscall_intr);
     setintr(SOFTVEC_TYPE_SOFTERR, softerr_intr);

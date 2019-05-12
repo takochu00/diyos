@@ -13,6 +13,8 @@ diy_thread_id_t diy_thread_getid(void);
 int diy_thread_change_priority(int priority);
 void *diy_thread_kmalloc(int size);
 int diy_thread_kmfree(void *p);
+int diy_thread_msgsend(diy_msgbox_id_t id, int size, char *p);
+diy_thread_id_t diy_thread_msgrecv(diy_msgbox_id_t id, int *psize, char **pp);
 
 //for library
 void diy_start(diy_func_t func, char *name, int priority, int stacksize, int argc, char *argv[]);

@@ -112,3 +112,66 @@ int test10_1(int argc, char *argv[]){
     }
     return 0;
 }
+
+int test11_1(int argc, char *argv[]){
+    char *p;
+    int size;
+
+    //static area recv
+    printf("test11_1 started\n");
+    printf("test11_1 recv in\n");
+    diy_thread_msgrecv(MSGBOX_ID_MSGBOX1, &size, &p);
+    printf("test11_1 recv out\n");
+    printf(p);
+
+    //dynamic area recv
+    printf("test11_1 recv in\n");
+    diy_thread_msgrecv(MSGBOX_ID_MSGBOX1, &size, &p);
+    printf("test11_1 recv out\n");
+    printf(p);
+    diy_thread_kmfree(p);
+
+    //static area send
+    printf("test11_1 send in\n");
+    diy_thread_msgsend(MSGBOX_ID_MSGBOX2, 15, "static memory\n");
+    printf("test11_1 send out\n");
+
+    //dynamic area send
+    p = diy_thread_kmalloc(18);
+    strcpy(p, "allocated memory\n");
+    printf("test11_1 send in\n");
+    diy_thread_msgsend(MSGBOX_ID_MSGBOX2, 18, p);
+    printf("test11_1 send out\n");
+
+    printf("test11_1 end\n");
+    return 0;
+}
+
+int test11_2(int argc, char *argv[]){
+    char *p;
+    int size;
+    printf("test11_2 started\n");
+
+    printf("test11_2 send in\n");
+    diy_thread_msgsend(MSGBOX_ID_MSGBOX1, 15, "static memory\n");
+    printf("test11_2 send out\n");
+
+    p = diy_thread_kmalloc(18);
+    strcpy(p, "allocated memory\n");
+    printf("test11_2 send in\n");
+    diy_thread_msgsend(MSGBOX_ID_MSGBOX1, 18, p);
+    printf("test11_2 send out\n");
+    
+    printf("test11_2 recv in\n");
+    diy_thread_msgrecv(MSGBOX_ID_MSGBOX2, &size, &p);
+    printf("test11_2 recv out\n");
+    printf(p);
+
+    printf("test11_2 recv in\n");
+    diy_thread_msgrecv(MSGBOX_ID_MSGBOX2, &size, &p);
+    printf("test11_2 recv out\n");
+    printf(p);
+    diy_thread_kmfree(p);
+    printf("test11_2 end\n");
+    return 0;
+}

@@ -63,3 +63,21 @@ int diy_thread_kmfree(void *p){
     diy_syscall(DIY_SYSCALL_TYPE_KMFREE, &param);
     return param.un.kmfree.ret;
 }
+
+int diy_thread_msgsend(diy_msgbox_id_t id, int size, char *p){
+    diy_syscall_param_t param;
+    param.un.msgsend.id = id;
+    param.un.msgsend.size = size;
+    param.un.msgsend.p = p;
+    diy_syscall(DIY_SYSCALL_TYPE_MSGSEND, &param);
+    return param.un.msgsend.ret;
+}
+
+diy_thread_id_t diy_thread_msgrecv(diy_msgbox_id_t id, int *psize, char **pp){
+    diy_syscall_param_t param;
+    param.un.msgrecv.id = id;
+    param.un.msgrecv.psize = psize;
+    param.un.msgrecv.pp = pp;
+    diy_syscall(DIY_SYSCALL_TYPE_MSGRECV, &param);
+    return param.un.msgrecv.ret;
+}

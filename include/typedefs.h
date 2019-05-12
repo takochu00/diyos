@@ -15,4 +15,10 @@ typedef uint32_t diy_thread_id_t;
 typedef int (*diy_func_t)(int argc, char *argv[]);
 typedef void (*diy_handler_t)(void);
 
+typedef enum {
+    MSGBOX_ID_MSGBOX1 = 0,
+    MSGBOX_ID_MSGBOX2,
+    MSGBOX_ID_NUM,
+} diy_msgbox_id_t;
+
 #endif//_TYPEDEFS_H_

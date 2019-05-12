@@ -12,6 +12,8 @@ typedef enum {
     DIY_SYSCALL_TYPE_CHANGE_PRIORITY,
     DIY_SYSCALL_TYPE_KMALLOC,
     DIY_SYSCALL_TYPE_KMFREE,
+    DIY_SYSCALL_TYPE_MSGSEND,
+    DIY_SYSCALL_TYPE_MSGRECV,
 } diy_syscall_type_t;
 
 typedef struct {
@@ -53,6 +55,18 @@ typedef struct {
             void *p;
             int ret;
         } kmfree;
+        struct {
+            diy_msgbox_id_t id;
+            int size;
+            char *p;
+            int ret;
+        } msgsend;
+        struct {
+            diy_msgbox_id_t id;
+            int *psize;
+            char **pp;
+            diy_thread_id_t ret;
+        } msgrecv;
     } un;
 } diy_syscall_param_t;
 
