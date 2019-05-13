@@ -251,7 +251,7 @@ static void msgrecv(diy_msgbox *pmsgbox){
     pmsg->next = NULL;
 
     param = pmsgbox->receiver->syscall.param;
-    param->un.msgrecv.ret = (diy_thread_id_t *)pmsg->sender;
+    param->un.msgrecv.ret = (diy_thread_id_t)pmsg->sender;
     if(param->un.msgrecv.psize != NULL){
         *(param->un.msgrecv.psize) = pmsg->param.size;
     }
@@ -293,12 +293,14 @@ static diy_thread_id_t thread_msgrecv(diy_msgbox_id_t id, int *psize, char **pp)
     return current_thread->syscall.param->un.msgrecv.ret;
 }
 
-static int setintr(softvec_type_t type, diy_handler_t handler){
+//interrupt handler registration at syscall
+static int thread_setintr(softvec_type_t type, diy_handler_t handler){
     static void thread_intr(softvec_type_t type, uint32_t sp);
     //register interrupt handler to enter OS process
     softvec_setintr(type, thread_intr);
     // register interrupt handler for OS
     handlers[type] = handler;
+    put_current_thread();//reentry to readyque
     return 0;
 }
 
@@ -339,6 +341,9 @@ static void call_functions(diy_syscall_type_t type, diy_syscall_param_t *param){
         case DIY_SYSCALL_TYPE_MSGRECV:
             param->un.msgrecv.ret = thread_msgrecv(param->un.msgrecv.id, param->un.msgrecv.psize, param->un.msgrecv.pp);
             break;
+        case DIY_SYSCALL_TYPE_SETINTR:
+            param->un.setintr.ret = thread_setintr(param->un.setintr.type, param->un.setintr.handler);
+            break;
         default:
             break;
     }
@@ -346,6 +351,14 @@ static void call_functions(diy_syscall_type_t type, diy_syscall_param_t *param){
 
 static void syscall_proc(diy_syscall_type_t type, diy_syscall_param_t *param){
     get_current_thread();//pop current_thread from readyque
+    call_functions(type, param);
+}
+
+static void srvcall_proc(diy_syscall_type_t type, diy_syscall_param_t *param){
+    // Set current_thread NULL because if current_thread is referred in syscall, thread may work wrong.
+    //srvcall should be called in the consective process of internal thread_intrvec().
+    //current_thread is reset at that time.
+    current_thread = NULL;
     call_functions(type, param);
 }
 
@@ -378,6 +391,9 @@ static void thread_intr(softvec_type_t type, uint32_t sp){
     current_thread->context.sp = sp;
 
     //call handler if registered
+    //In the case of SOFTVEC_TYPE_SYSCALL, SOFTVEC_TYPE_SOFTERR,
+    //syscall_intr(), soferr_intr() is called.
+    //The other case is called the function which is registered by diy_setintr().
     if(handlers[type]) handlers[type]();
 
     //schedule and dispatch thread.
@@ -394,8 +410,8 @@ void diy_start(diy_func_t func, char *name, int priority, int stacksize, int arg
     memset(handlers, 0, sizeof(handlers));
     memset(msgboxes, 0, sizeof(msgboxes));
 
-    setintr(SOFTVEC_TYPE_SYSCALL, syscall_intr);
-    setintr(SOFTVEC_TYPE_SOFTERR, softerr_intr);
+    thread_setintr(SOFTVEC_TYPE_SYSCALL, syscall_intr);
+    thread_setintr(SOFTVEC_TYPE_SOFTERR, softerr_intr);
 
     current_thread = (diy_thread *)thread_run(func, name, priority, stacksize, argc, argv);
     dispatch(&current_thread->context);
@@ -409,5 +425,9 @@ void diy_syscall(diy_syscall_type_t type, diy_syscall_param_t *param){
     current_thread->syscall.type = type;
     current_thread->syscall.param = param;
     asm volatile ("trapa #0"); //issue trap interrupt
+}
+
+void diy_srvcall(diy_syscall_type_t type, diy_syscall_param_t *param){
+    srvcall_proc(type, param);    
 }
 

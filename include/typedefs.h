@@ -16,8 +16,8 @@ typedef int (*diy_func_t)(int argc, char *argv[]);
 typedef void (*diy_handler_t)(void);
 
 typedef enum {
-    MSGBOX_ID_MSGBOX1 = 0,
-    MSGBOX_ID_MSGBOX2,
+    MSGBOX_ID_CONSOLE_INPUT = 0,
+    MSGBOX_ID_CONSOLE_OUTPUT,
     MSGBOX_ID_NUM,
 } diy_msgbox_id_t;
 

@@ -2,19 +2,10 @@
 #include <diyos.h>
 #include <lib.h>
 #include <interrupt.h>
-#include <test.h>
-
-//diy_thread_id_t test09_1_id;
-//diy_thread_id_t test09_2_id;
-//diy_thread_id_t test09_3_id;
 
 static int start_threads(int argc, char *argv[]){
-    //test09_1_id = diy_thread_run(test09_1, "test09_1", 1, 0x100, 0, NULL);
-    //test09_2_id = diy_thread_run(test09_2, "test09_2", 2, 0x100, 0, NULL);
-    //test09_3_id = diy_thread_run(test09_3, "test09_3", 3, 0x100, 0, NULL);
-    //diy_thread_run(test10_1, "test10_1", 1, 0x100, 0, NULL);
-    diy_thread_run(test11_1, "test11_1", 1, 0x100, 0, NULL);
-    diy_thread_run(test11_2, "test11_2", 2, 0x100, 0, NULL);
+    diy_thread_run(console_driver_main, "console_driver", 1, 0x200, 0, NULL);
+    diy_thread_run(command_main, "command", 8, 0x200, 0, NULL);
     diy_thread_change_priority(15);//set lowest priority
     INTR_ENABLE;//enable interrupt
     while(1){

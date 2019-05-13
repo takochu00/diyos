@@ -1,6 +1,7 @@
 #ifndef _SYSCALL_H_
 #define _SYSCALL_H_
 #include <typedefs.h>
+#include <interrupt.h>
 
 typedef enum {
     DIY_SYSCALL_TYPE_RUN = 0,
@@ -14,6 +15,7 @@ typedef enum {
     DIY_SYSCALL_TYPE_KMFREE,
     DIY_SYSCALL_TYPE_MSGSEND,
     DIY_SYSCALL_TYPE_MSGRECV,
+    DIY_SYSCALL_TYPE_SETINTR,
 } diy_syscall_type_t;
 
 typedef struct {
@@ -67,6 +69,11 @@ typedef struct {
             char **pp;
             diy_thread_id_t ret;
         } msgrecv;
+        struct {
+            softvec_type_t type;
+            diy_handler_t handler;
+            int ret;
+        } setintr;
     } un;
 } diy_syscall_param_t;
 

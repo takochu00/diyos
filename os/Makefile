@@ -15,7 +15,7 @@ STRIP   = $(BINDIR)/$(ADDNAME)strip
 
 OBJS  = startup.o main.o
 #OS files
-OBJS += diyos.o syscall.o memory.o test.o 
+OBJS += diyos.o syscall.o memory.o console_driver.o command.o
 COMMONLIB = ../common/common.a
 TARGET = diyos
 
@@ -34,7 +34,7 @@ LFLAGS = -static -T ld.scr -L.
 
 all :		$(TARGET)
 
-$(TARGET) :	$(OBJS) $(COMMONLIB)
+$(TARGET) :	$(OBJS) $(COMMONLIB) 
 		$(CC) $(OBJS) $(COMMONLIB) -o $(TARGET) $(CFLAGS) $(LFLAGS)
 		cp $(TARGET) $(TARGET).elf
 		$(STRIP) $(TARGET)
